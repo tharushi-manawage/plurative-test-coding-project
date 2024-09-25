@@ -1,28 +1,28 @@
-const { Pool } = require('pg');
+const { Pool } = require("pg");
 
-let client = {
-    host: "localhost",
-    port: 5432,
-    user: "postgres",
-    password: "1286290@tM",
-    database: "user_info"
-};
-
-const clientConfig = process.env.DATABASE_URL ? {
+const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: {
         rejectUnauthorized: false
     }
-} : client;
-
-const pool = new Pool(clientConfig);
-
-pool.connect((error) => {
-    if (error) {
-        console.error("Connection Error!", error.stack);
-    } else {
-        console.log("Connected");
-    }
 });
 
-module.exports = pool;
+// pool.connect((error) => {
+//     if (error) {
+//         console.error("Connection Error!", error.stack);
+//     } else {
+//         console.log("Connected");
+//     }
+// });
+
+async function dbQquery(query, params) {
+    const client = await pool.connect();
+    try {
+        const result = await client.query(query, params);
+        return result;
+    } finally {
+        client.release();
+    }
+}
+
+module.exports = dbQquery;
